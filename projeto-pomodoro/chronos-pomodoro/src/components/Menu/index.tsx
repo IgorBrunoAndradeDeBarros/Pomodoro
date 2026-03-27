@@ -1,5 +1,5 @@
 import { HistoryIcon, HouseIcon, SettingsIcon, SunIcon } from 'lucide-react'
-import styles from './style.module.css'
+import styles from './styles.module.css'
 
 export function Menu() {
     return (
