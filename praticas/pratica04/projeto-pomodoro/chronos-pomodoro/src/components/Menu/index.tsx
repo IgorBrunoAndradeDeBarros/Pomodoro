@@ -6,7 +6,7 @@ import {
     SunIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import styles from './style.module.css'
+import styles from './styles.module.css'
 
 type AvailableThemes = 'dark' | 'light'
 
