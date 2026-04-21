@@ -1,0 +1,9 @@
+/* src/components/Heading.module.css */
+ex
+.heading {
+  background-color: rgb(192, 190, 230);
+  color: white;
+}
+.cyanText {
+  color: rgb(0, 255, 179);
+}
