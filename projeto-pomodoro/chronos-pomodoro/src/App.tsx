@@ -1,35 +1,69 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { PlayCircleIcon } from 'lucide-react'
+import { Container } from './components/Container'
+import { CountDown } from './components/CountDown'
+import { Cycles } from './components/Cycles'
+import { DefaultButton } from './components/DefaultButton'
+import { DefaultInput } from './components/DefaultInput'
+import { Footer } from './components/Footer'
+import { Heading } from './components/Heading'
+import { Logo } from './components/Logo'
+import { Menu } from './components/Menu'
+import './style/theme.css'
+import './style/global.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+export function App() {
+    const [numero, setNumero] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    function handleClick() {
+        setNumero(prevState => prevState + 1)
+    }
+
+    return (
+        <>
+            <Heading>Número: {numero}</Heading>
+            <button onClick={handleClick}>Aumenta</button>
+
+            <Container>
+                <Logo />
+            </Container>
+
+            <Container>
+                <Menu />
+            </Container>
+
+            <Container>
+                <CountDown />
+            </Container>
+
+            <Container>
+                <form className="form" action="">
+                    <div className="formRow">
+                        <DefaultInput
+                            labelText={numero.toString()}
+                            id="meuInput"
+                            type="text"
+                            placeholder="Digite algo"
+                        />
+                    </div>
+
+                    <div className="formRow">
+                        <p>Oque você está trabalhando agora?</p>
+                    </div>
+
+                    <div className="formRow">
+                        <Cycles />
+                    </div>
+
+                    <div className="formRow">
+                        <DefaultButton icon={<PlayCircleIcon />} />
+                    </div>
+                </form>
+            </Container>
+
+            <Container>
+                <Footer />
+            </Container>
+        </>
+    )
 }
-
-export default App
