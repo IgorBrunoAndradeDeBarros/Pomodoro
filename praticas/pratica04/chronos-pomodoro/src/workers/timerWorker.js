@@ -1,30 +1,37 @@
 let isRunning = false;
+let timeoutId = null;
 
 self.onmessage = function (event) {
-  if (isRunning) return;
+    if (isRunning) return;
 
-  isRunning = true;
+    isRunning = true;
 
-  const state = event.data;
-  const { activeTask, secondsRemaining } = state;
+    const state = event.data;
+    const { activeTask, secondsRemaining } = state;
 
-  const endDate = activeTask.startDate + secondsRemaining * 1000;
-  const now = Date.now();
-  let countDownSeconds = Math.ceil((endDate - now) / 1000);
+    const startDate =
+        typeof activeTask.startDate === 'string'
+            ? new Date(activeTask.startDate).getTime()
+            : activeTask.startDate;
 
-  function tick() {
-    self.postMessage(countDownSeconds);
+    const endDate = startDate + secondsRemaining * 1000;
 
-    const nowInner = Date.now();
-    countDownSeconds = Math.floor((endDate - nowInner) / 1000);
+    function tick() {
+        const now = Date.now();
+        const countDownSeconds = Math.max(
+            0,
+            Math.ceil((endDate - now) / 1000)
+        );
 
-    if (countDownSeconds <= 0) {
-      self.postMessage(0);
-      return;
+        self.postMessage(countDownSeconds);
+
+        if (countDownSeconds <= 0) {
+            isRunning = false;
+            return;
+        }
+
+        timeoutId = setTimeout(tick, 1000);
     }
 
-    setTimeout(tick, 1000);
-  }
-
-  tick();
+    tick();
 };

@@ -2,10 +2,10 @@ import { useEffect, useReducer, useRef } from 'react';
 import { initialTaskState } from './initialTaskState';
 import { taskReducer } from './taskReducer';
 import { TaskContext } from './TaskContext';
+import { TimerWorkerManager } from '../../workers/TimerWorkerManager';
 import { TaskActionTypes } from './taskActions';
 import { loadBeep } from '../../utils/loadBeep';
 import type { TaskStateModel } from '../../models/TaskStateModel';
-import { TimerWorkerManager } from '../../workers/TimerWorkerManager';
 
 type TaskContextProviderProps = {
     children: React.ReactNode;
@@ -15,27 +15,33 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
     const [state, dispatch] = useReducer(taskReducer, initialTaskState, () => {
         const storageState = localStorage.getItem('state');
 
-        if (!storageState) return initialTaskState;
+        if (storageState === null) return initialTaskState;
 
-        try {
-            const parsedStorageState = JSON.parse(storageState) as TaskStateModel;
+        const parsedStorageState = JSON.parse(storageState) as TaskStateModel;
 
-            return {
-                ...parsedStorageState,
-                activeTask: null,
-                secondsRemaining: 0,
-                formattedSecondsRemaining: '00:00',
-            };
-        } catch {
-            return initialTaskState;
-        }
+        return {
+            ...parsedStorageState,
+            activeTask: null,
+            secondsRemaining: 0,
+            formattedSecondsRemaining: '00:00',
+        };
     });
 
     const playBeepRef = useRef<ReturnType<typeof loadBeep> | null>(null);
 
-    const worker = TimerWorkerManager.getInstance();
+    useEffect(() => {
+        localStorage.setItem('state', JSON.stringify(state));
+
+        document.title = `${state.formattedSecondsRemaining} - Chronos Pomodoro`;
+    }, [state]);
 
     useEffect(() => {
+        if (!state.activeTask) {
+            return;
+        }
+
+        const worker = TimerWorkerManager.getInstance();
+
         worker.onmessage(e => {
             const countDownSeconds = e.data;
 
@@ -50,38 +56,32 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
                 });
 
                 worker.terminate();
-            } else {
-                dispatch({
-                    type: TaskActionTypes.COUNT_DOWN,
-                    payload: { secondsRemaining: countDownSeconds },
-                });
+                return;
             }
+
+            dispatch({
+                type: TaskActionTypes.COUNT_DOWN,
+                payload: {
+                    secondsRemaining: countDownSeconds,
+                },
+            });
         });
-    }, [worker]);
-
-    useEffect(() => {
-        localStorage.setItem('state', JSON.stringify(state));
-
-        document.title = `${state.formattedSecondsRemaining} - Chronos Pomodoro`;
-
-        if (!state.activeTask) {
-            worker.terminate();
-            return;
-        }
 
         worker.postMessage(state);
-    }, [worker, state]);
+
+        return () => {
+            worker.terminate();
+        };
+    }, [state.activeTask]);
 
     useEffect(() => {
-        if (!state.activeTask) {
-            playBeepRef.current = null;
+        if (state.activeTask && playBeepRef.current === null) {
+            playBeepRef.current = loadBeep();
             return;
         }
 
-        if (playBeepRef.current === null) {
-            const play = loadBeep();
-            playBeepRef.current = play;
-            play();
+        if (!state.activeTask) {
+            playBeepRef.current = null;
         }
     }, [state.activeTask]);
 
