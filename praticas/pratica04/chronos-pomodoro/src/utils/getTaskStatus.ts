@@ -6,3 +6,4 @@ export function getTaskStatus(task: TaskModel, activeTask: TaskModel | null) {
     if (task.id === activeTask?.id) return 'Em Progresso';
     return 'Abandonada';
 }
+
