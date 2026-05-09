@@ -1,10 +1,15 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
-import { AboutPomodoro } from '../../pages/AboutPomodoro';
-import { NotFound } from '../../pages/Notfound';
-import { Home } from '../../pages/home';
 import { useEffect } from 'react';
-import {History} from "../../pages/History";
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+
+import { AboutPomodoro } from '../../pages/AboutPomodoro';
+import { History } from '../../pages/History';
+import { Home } from '../../pages/home';
+import { Login } from '../../pages/Login';
+import { NotFound } from '../../pages/Notfound';
 import { Settings } from '../../pages/Settings';
+
+import { ProtectedRoute } from '../../components/ProtectedRoute';
+import { PublicOnlyRoute } from '../../components/PublicOnlyRoute';
 
 function ScrollToTop() {
     const { pathname } = useLocation();
@@ -20,12 +25,54 @@ export function MainRouter() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path='/' element={<Home />} />
-                <Route path='/history/' element={<History />} />
-                <Route path='/settings/' element={<Settings />} />
-                <Route path='/about-pomodoro/' element={<AboutPomodoro />} />
-                <Route path='*' element={<NotFound />} />
+                <Route
+                    path="/"
+                    element={
+                        <PublicOnlyRoute>
+                            <Login />
+                        </PublicOnlyRoute>
+                    }
+                />
+
+                <Route
+                    path="/home"
+                    element={
+                        <ProtectedRoute>
+                            <Home />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/history"
+                    element={
+                        <ProtectedRoute>
+                            <History />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/settings"
+                    element={
+                        <ProtectedRoute>
+                            <Settings />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/about-pomodoro"
+                    element={
+                        <ProtectedRoute>
+                            <AboutPomodoro />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route path="*" element={<NotFound />} />
             </Routes>
+
             <ScrollToTop />
         </BrowserRouter>
     );
