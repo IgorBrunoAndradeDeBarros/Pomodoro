@@ -1,17 +1,15 @@
-import { useEffect, useState } from 'react';
 import {
     HistoryIcon,
-    HouseIcon,
-    LogOutIcon,
+    HouseIcon, LogOutIcon,
     MoonIcon,
     SettingsIcon,
     SunIcon,
 } from 'lucide-react';
-import { useNavigate } from 'react-router';
 import styles from './styles.module.css';
-
+import { useState, useEffect } from 'react';
 import { RouterLink } from '../RouterLink';
-import { useAuthContext } from '../../contexts/AuthContext';
+import {useNavigate} from "react-router";
+import {useAuthContext} from "../../contexts/AuthContext";
 
 type AvailableThemes = 'dark' | 'light';
 
@@ -56,40 +54,54 @@ export function Menu() {
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
     }, [theme]);
 
     return (
         <nav className={styles.menu}>
-            <RouterLink href="/home" aria-label="Ir para home" title="Home">
+            <RouterLink
+                className={styles.menuLink}
+                href='/'
+                aria-label='Ir para a Home'
+                title='Ir para a Home'
+            >
                 <HouseIcon />
             </RouterLink>
 
             <RouterLink
-                href="/history"
-                aria-label="Ver histórico"
-                title="Histórico"
+                className={styles.menuLink}
+                href='/history/'
+                aria-label='Ver Histórico'
+                title='Ver Histórico'
             >
                 <HistoryIcon />
             </RouterLink>
 
             <RouterLink
-                href="#"
-                aria-label="Alterar tema"
-                title="Alterar tema"
-                onClick={handleThemeChange}
-            >
-                {nextThemeIcon[theme]}
-            </RouterLink>
-
-            <RouterLink
-                href="#"
-                aria-label="Configurações"
-                title="Configurações"
+                className={styles.menuLink}
+                href='/settings/'
+                aria-label='Configurações'
+                title='Configurações'
             >
                 <SettingsIcon />
             </RouterLink>
 
-            <RouterLink href="#" aria-label="Sair" title="Sair" onClick={handleLogout}>
+            <a
+                className={styles.menuLink}
+                href='#'
+                aria-label='Mudar Tema'
+                title='Mudar Tema'
+                onClick={handleThemeChange}
+            >
+                {nextThemeIcon[theme]}
+            </a>
+            <RouterLink
+                className={styles.menuLink}
+                href='#'
+                aria-label='Sair'
+                title='Sair'
+                onClick={handleLogout}
+            >
                 <LogOutIcon />
             </RouterLink>
         </nav>
