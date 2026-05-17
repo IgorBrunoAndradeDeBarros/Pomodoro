@@ -1,12 +1,12 @@
 package io.github.dilluter.pomodorobackend.api.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -17,27 +17,17 @@ import lombok.NoArgsConstructor;
 public class Settings {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id ;
+    private Long id;
 
-    @NotNull(message = "workDuration é obrigatório")
-    @Min(value = 1, message = "workDuration deve ser no mínimo 1")
-    @Column(name = "work_duration", nullable = false)
-    private Integer workDuration;
+    @Column(name = "work_time", nullable = false)
+    private Integer workTime;
 
-    @NotNull(message = "shortBreakDuration é obrigatório")
-    @Min(value = 1, message = "shortBreakDuration deve ser no mínimo 1")
-    @Column(name = "short_break_duration", nullable = false)
-    private Integer shortBreakDuration;
+    @Column(name = "short_break_time", nullable = false)
+    private Integer shortBreakTime;
 
-    @NotNull(message = "longBreakDuration é obrigatório")
-    @Min(value = 1, message = "longBreakDuration deve ser no mínimo 1")
-    @Column(name = "long_break_duration", nullable = false)
-    private Integer longBreakDuration;
+    @Column(name = "long_break_time", nullable = false)
+    private Integer longBreakTime;
 
-    @NotNull(message = "cyclesBeforeLongBreak é obrigatório")
-    @Min(value = 1, message = "cyclesBeforeLongBreak deve ser no mínimo 1")
-    @Column(name = "cycles_before_long_break", nullable = false)
-    private Integer cyclesBeforeLongBreak;
-
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 }
