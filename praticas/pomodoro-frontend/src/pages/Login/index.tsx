@@ -7,66 +7,95 @@ type ViewMode = 'login' | 'register' | 'recover';
 
 export function Login() {
     const navigate = useNavigate();
-    const { login } = useAuthContext();
+    const { login, register } = useAuthContext();
 
     const usernameInputRef = useRef<HTMLInputElement | null>(null);
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [messageType, setMessageType] = useState<'error' | 'success'>('error');
+    const [isLoading, setIsLoading] = useState(false);
     const [viewMode, setViewMode] = useState<ViewMode>('login');
 
     useEffect(() => {
         usernameInputRef.current?.focus();
-    }, []);
+    }, [viewMode]);
 
     useEffect(() => {
         if (!message) return;
-
-        const timeoutId = setTimeout(() => {
-            setMessage('');
-        }, 4000);
-
+        const timeoutId = setTimeout(() => setMessage(''), 5000);
         return () => clearTimeout(timeoutId);
     }, [message]);
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    function showError(msg: string) {
+        setMessageType('error');
+        setMessage(msg);
+    }
+
+    function showSuccess(msg: string) {
+        setMessageType('success');
+        setMessage(msg);
+    }
+
+    async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        if (!username.trim()) {
-            setMessage('Informe o usuário.');
-            return;
+        if (!username.trim()) { showError('Informe o usuário.'); return; }
+        if (!password) { showError('Informe a senha.'); return; }
+
+        setIsLoading(true);
+        try {
+            await login(username.trim(), password);
+            showSuccess('Login realizado com sucesso!');
+            navigate('/home');
+        } catch (err) {
+            showError(err instanceof Error ? err.message : 'Erro ao fazer login.');
+        } finally {
+            setIsLoading(false);
         }
-
-        if (!password) {
-            setMessage('Informe a senha.');
-            return;
-        }
-
-        const isValidLogin = login(username, password);
-
-        if (!isValidLogin) {
-            setMessage('Usuário ou senha inválidos.');
-            return;
-        }
-
-        setMessage('Login realizado com sucesso.');
-        navigate('/home');
     }
 
-    function handleRegisterClick() {
+    async function handleRegisterSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        if (!username.trim()) { showError('Informe o usuário.'); return; }
+        if (!password) { showError('Informe a senha.'); return; }
+        if (password.length < 6) { showError('Senha deve ter no mínimo 6 caracteres.'); return; }
+        if (password !== confirmPassword) { showError('As senhas não coincidem.'); return; }
+
+        setIsLoading(true);
+        try {
+            await register(username.trim(), password);
+            showSuccess('Conta criada com sucesso!');
+            navigate('/home');
+        } catch (err) {
+            showError(err instanceof Error ? err.message : 'Erro ao criar conta.');
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    function handleSwitchToRegister() {
         setViewMode('register');
-        setMessage('Fluxo de cadastro ainda será implementado.');
+        setMessage('');
+        setUsername('');
+        setPassword('');
+        setConfirmPassword('');
     }
 
-    function handleRecoverClick() {
+    function handleSwitchToRecover() {
         setViewMode('recover');
-        setMessage('Fluxo de recuperação de senha ainda será implementado.');
+        setMessage('');
     }
 
-    function handleBackToLoginClick() {
+    function handleBackToLogin() {
         setViewMode('login');
         setMessage('');
+        setUsername('');
+        setPassword('');
+        setConfirmPassword('');
     }
 
     return (
@@ -74,12 +103,21 @@ export function Login() {
             <section className={styles.card}>
                 <div className={styles.header}>
                     <strong className={styles.logo}>Chronos</strong>
-                    <h1>Acesse sua conta</h1>
-                    <p>Entre para acessar o Pomodoro.</p>
+                    <h1>
+                        {viewMode === 'login' && 'Acesse sua conta'}
+                        {viewMode === 'register' && 'Criar conta'}
+                        {viewMode === 'recover' && 'Recuperar senha'}
+                    </h1>
+                    <p>
+                        {viewMode === 'login' && 'Entre para acessar o Pomodoro.'}
+                        {viewMode === 'register' && 'Preencha os dados para se cadastrar.'}
+                        {viewMode === 'recover' && 'Informe seu e-mail para recuperar o acesso.'}
+                    </p>
                 </div>
 
+                {/* ── LOGIN ── */}
                 {viewMode === 'login' && (
-                    <form className={styles.form} onSubmit={handleSubmit}>
+                    <form className={styles.form} onSubmit={handleLoginSubmit}>
                         <div className={styles.field}>
                             <label htmlFor="login-user">Usuário</label>
                             <input
@@ -87,11 +125,10 @@ export function Login() {
                                 id="login-user"
                                 type="text"
                                 value={username}
-                                onChange={event =>
-                                    setUsername(event.target.value)
-                                }
+                                onChange={e => setUsername(e.target.value)}
                                 placeholder="Digite seu usuário"
                                 autoComplete="username"
+                                disabled={isLoading}
                             />
                         </div>
 
@@ -101,72 +138,116 @@ export function Login() {
                                 id="login-password"
                                 type="password"
                                 value={password}
-                                onChange={event =>
-                                    setPassword(event.target.value)
-                                }
+                                onChange={e => setPassword(e.target.value)}
                                 placeholder="Digite sua senha"
                                 autoComplete="current-password"
+                                disabled={isLoading}
                             />
                         </div>
 
                         {message && (
-                            <p className={styles.message} role="alert">
+                            <p
+                                className={`${styles.message} ${messageType === 'success' ? styles.messageSuccess : styles.messageError}`}
+                                role="alert"
+                            >
                                 {message}
                             </p>
                         )}
 
-                        <button className={styles.submitButton} type="submit">
-                            Entrar
+                        <button
+                            className={styles.submitButton}
+                            type="submit"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Entrando...' : 'Entrar'}
                         </button>
 
                         <div className={styles.actions}>
-                            <button
-                                type="button"
-                                onClick={handleRegisterClick}
-                            >
+                            <button type="button" onClick={handleSwitchToRegister} disabled={isLoading}>
                                 Não tem conta? Cadastre-se
                             </button>
-
-                            <button
-                                type="button"
-                                onClick={handleRecoverClick}
-                            >
+                            <button type="button" onClick={handleSwitchToRecover} disabled={isLoading}>
                                 Esqueci minha senha
                             </button>
                         </div>
                     </form>
                 )}
 
+                {/* ── REGISTER ── */}
                 {viewMode === 'register' && (
-                    <div className={styles.fakeFlow}>
-                        <h2>Cadastro</h2>
-                        <p>
-                            Tela de cadastro em desenvolvimento. Por enquanto,
-                            este fluxo é apenas uma simulação.
-                        </p>
+                    <form className={styles.form} onSubmit={handleRegisterSubmit}>
+                        <div className={styles.field}>
+                            <label htmlFor="reg-user">Usuário</label>
+                            <input
+                                ref={usernameInputRef}
+                                id="reg-user"
+                                type="text"
+                                value={username}
+                                onChange={e => setUsername(e.target.value)}
+                                placeholder="Escolha um usuário"
+                                autoComplete="username"
+                                disabled={isLoading}
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label htmlFor="reg-password">Senha</label>
+                            <input
+                                id="reg-password"
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                placeholder="Mínimo 6 caracteres"
+                                autoComplete="new-password"
+                                disabled={isLoading}
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label htmlFor="reg-confirm">Confirmar senha</label>
+                            <input
+                                id="reg-confirm"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={e => setConfirmPassword(e.target.value)}
+                                placeholder="Repita a senha"
+                                autoComplete="new-password"
+                                disabled={isLoading}
+                            />
+                        </div>
 
                         {message && (
-                            <p className={styles.message} role="alert">
+                            <p
+                                className={`${styles.message} ${messageType === 'success' ? styles.messageSuccess : styles.messageError}`}
+                                role="alert"
+                            >
                                 {message}
                             </p>
                         )}
 
                         <button
                             className={styles.submitButton}
-                            type="button"
-                            onClick={handleBackToLoginClick}
+                            type="submit"
+                            disabled={isLoading}
                         >
-                            Voltar para login
+                            {isLoading ? 'Criando conta...' : 'Criar conta'}
                         </button>
-                    </div>
+
+                        <div className={styles.actions}>
+                            <button type="button" onClick={handleBackToLogin} disabled={isLoading}>
+                                Já tem conta? Faça login
+                            </button>
+                        </div>
+                    </form>
                 )}
 
+                {/* ── RECOVER ── */}
                 {viewMode === 'recover' && (
                     <div className={styles.fakeFlow}>
                         <h2>Recuperar senha</h2>
                         <p>
-                            Tela de recuperação de senha em desenvolvimento. Por
-                            enquanto, este fluxo é apenas uma simulação.
+                            Tela de recuperação de senha em desenvolvimento.
+                            Por enquanto, este fluxo é apenas uma simulação.
                         </p>
 
                         {message && (
@@ -178,7 +259,7 @@ export function Login() {
                         <button
                             className={styles.submitButton}
                             type="button"
-                            onClick={handleBackToLoginClick}
+                            onClick={handleBackToLogin}
                         >
                             Voltar para login
                         </button>

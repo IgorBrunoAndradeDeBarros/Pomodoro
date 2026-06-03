@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { validateMockLogin } from '../../utils/validateMockLogin';
 import { AuthContext } from './AuthContext';
+import {loginUser, registerUser} from "../../adapters/authAdapter.ts";
 
 const STORAGE_KEY = 'chronos-auth';
 
@@ -13,15 +13,16 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         return sessionStorage.getItem(STORAGE_KEY) === '1';
     });
 
-    const login = useCallback((username: string, password: string) => {
-        const isValid = validateMockLogin(username, password);
+    const login = useCallback(async (username: string, password: string): Promise<void> => {
+        await loginUser({ username, password });
+        sessionStorage.setItem(STORAGE_KEY, '1');
+        setIsAuthenticated(true);
+    }, []);
 
-        if (isValid) {
-            sessionStorage.setItem(STORAGE_KEY, '1');
-            setIsAuthenticated(true);
-        }
-
-        return isValid;
+    const register = useCallback(async (username: string, password: string): Promise<void> => {
+        await registerUser({ username, password });
+        sessionStorage.setItem(STORAGE_KEY, '1');
+        setIsAuthenticated(true);
     }, []);
 
     const logout = useCallback(() => {
@@ -33,9 +34,10 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         () => ({
             isAuthenticated,
             login,
+            register,
             logout,
         }),
-        [isAuthenticated, login, logout],
+        [isAuthenticated, login, register, logout],
     );
 
     return (
