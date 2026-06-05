@@ -1,0 +1,285 @@
+{
+  "info": {
+    "name": "Pomodoro Backend",
+    "_postman_id": "pomodoro-backend-collection",
+    "description": "Collection completa para a API do Pomodoro Backend (Spring Boot). Base URL: http://localhost:3333",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3333",
+      "type": "string"
+    },
+    {
+      "key": "taskId",
+      "value": "",
+      "type": "string",
+      "description": "ID da tarefa retornado após criar uma task"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica se a API está no ar. Retorna `{ \"ok\": true }` se estiver funcionando."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"ok\": true\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Get Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["settings"]
+            },
+            "description": "Retorna as configurações atuais do Pomodoro (tempos de trabalho e pausas)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"workTime\": 25,\n    \"shortBreakTime\": 5,\n    \"longBreakTime\": 15,\n    \"updatedAt\": \"2025-01-01T10:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"workTime\": 25,\n    \"shortBreakTime\": 5,\n    \"longBreakTime\": 15\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["settings"]
+            },
+            "description": "Atualiza as configurações de tempo do Pomodoro.\n\n- `workTime`: duração do foco (em minutos)\n- `shortBreakTime`: pausa curta (em minutos)\n- `longBreakTime`: pausa longa (em minutos)"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"workTime\": 25,\n    \"shortBreakTime\": 5,\n    \"longBreakTime\": 15,\n    \"updatedAt\": \"2025-01-01T12:00:00\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Get All Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"]
+            },
+            "description": "Retorna a lista de todas as tarefas cadastradas."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n    {\n        \"id\": \"abc123\",\n        \"name\": \"Estudar Spring Boot\",\n        \"duration\": 25,\n        \"type\": \"WORK\",\n        \"startDate\": 1700000000000,\n        \"completeDate\": null,\n        \"interruptDate\": null,\n        \"status\": \"IN_PROGRESS\"\n    }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.id) {",
+                  "    pm.collectionVariables.set('taskId', json.id);",
+                  "    console.log('taskId salvo:', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Estudar Spring Boot\",\n    \"duration\": 25,\n    \"type\": \"WORK\",\n    \"startDate\": 1700000000000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"]
+            },
+            "description": "Cria uma nova tarefa. Retorna status 201.\n\n> ⚡ O script de teste desta requisição salva automaticamente o `id` retornado na variável `{{taskId}}` da collection."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"id\": \"abc123\",\n    \"name\": \"Estudar Spring Boot\",\n    \"duration\": 25,\n    \"type\": \"WORK\",\n    \"startDate\": 1700000000000,\n    \"completeDate\": null,\n    \"interruptDate\": null,\n    \"status\": \"IN_PROGRESS\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Complete Task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"completeDate\": 1700001500000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "{{taskId}}", "complete"]
+            },
+            "description": "Marca uma tarefa como concluída.\n\n- Usa a variável `{{taskId}}` (preenchida automaticamente ao criar uma task)\n- `completeDate`: timestamp em milissegundos do momento de conclusão"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"id\": \"abc123\",\n    \"name\": \"Estudar Spring Boot\",\n    \"duration\": 25,\n    \"type\": \"WORK\",\n    \"startDate\": 1700000000000,\n    \"completeDate\": 1700001500000,\n    \"interruptDate\": null,\n    \"status\": \"COMPLETED\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Interrupt Task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"interruptDate\": 1700000900000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{taskId}}/interrupt",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", "{{taskId}}", "interrupt"]
+            },
+            "description": "Interrompe uma tarefa em andamento.\n\n- Usa a variável `{{taskId}}` (preenchida automaticamente ao criar uma task)\n- `interruptDate`: timestamp em milissegundos do momento da interrupção"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n    \"id\": \"abc123\",\n    \"name\": \"Estudar Spring Boot\",\n    \"duration\": 25,\n    \"type\": \"WORK\",\n    \"startDate\": 1700000000000,\n    \"completeDate\": null,\n    \"interruptDate\": 1700000900000,\n    \"status\": \"INTERRUPTED\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete All Tasks",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"]
+            },
+            "description": "⚠️ Remove **todas** as tarefas do banco de dados. Retorna 204 No Content."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
