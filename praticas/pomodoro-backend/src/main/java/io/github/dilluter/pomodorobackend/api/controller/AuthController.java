@@ -1,7 +1,9 @@
 package io.github.dilluter.pomodorobackend.api.controller;
 
+import io.github.dilluter.pomodorobackend.api.dto.request.ForgotPasswordRequestDTO;
 import io.github.dilluter.pomodorobackend.api.dto.LoginRequestDTO;
 import io.github.dilluter.pomodorobackend.api.dto.RegisterRequestDTO;
+import io.github.dilluter.pomodorobackend.api.dto.ResetPasswordRequestDTO;
 import io.github.dilluter.pomodorobackend.api.dto.request.AuthResponseDTO;
 import io.github.dilluter.pomodorobackend.api.exception.BusinessException;
 import io.github.dilluter.pomodorobackend.api.service.AuthService;
@@ -21,12 +23,33 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO dto) throws BusinessException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(dto));
+    public ResponseEntity<AuthResponseDTO> register(
+            @Valid @RequestBody RegisterRequestDTO dto) throws BusinessException {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(authService.register(dto));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) throws BusinessException {
+    public ResponseEntity<AuthResponseDTO> login(
+            @Valid @RequestBody LoginRequestDTO dto) throws BusinessException {
         return ResponseEntity.ok(authService.login(dto));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequestDTO dto) throws BusinessException {
+        authService.requestPasswordReset(dto.getEmail());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody ResetPasswordRequestDTO dto) throws BusinessException {
+        authService.resetPassword(
+                dto.getToken(),
+                dto.getNewPassword()
+        );
+        return ResponseEntity.noContent().build();
     }
 }

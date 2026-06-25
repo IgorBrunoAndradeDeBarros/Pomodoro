@@ -1,5 +1,6 @@
 package io.github.dilluter.pomodorobackend.api.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -16,4 +17,7 @@ public class RegisterRequestDTO {
     @NotBlank(message = "Senha é obrigatória.")
     @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres.")
     private String password;
+
+    @Email(message = "E-mail inválido.")
+    private String email;
 }

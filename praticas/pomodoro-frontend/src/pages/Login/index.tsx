@@ -1,6 +1,7 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { forgotPassword } from '../../adapters/authAdapter';
 import styles from './styles.module.css';
 
 type ViewMode = 'login' | 'register' | 'recover';
@@ -12,6 +13,7 @@ export function Login() {
     const usernameInputRef = useRef<HTMLInputElement | null>(null);
 
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
@@ -39,16 +41,23 @@ export function Login() {
         setMessage(msg);
     }
 
+    function switchTo(mode: ViewMode) {
+        setViewMode(mode);
+        setMessage('');
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+    }
+
     async function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-
         if (!username.trim()) { showError('Informe o usuário.'); return; }
         if (!password) { showError('Informe a senha.'); return; }
 
         setIsLoading(true);
         try {
             await login(username.trim(), password);
-            showSuccess('Login realizado com sucesso!');
             navigate('/home');
         } catch (err) {
             showError(err instanceof Error ? err.message : 'Erro ao fazer login.');
@@ -59,7 +68,6 @@ export function Login() {
 
     async function handleRegisterSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-
         if (!username.trim()) { showError('Informe o usuário.'); return; }
         if (!password) { showError('Informe a senha.'); return; }
         if (password.length < 6) { showError('Senha deve ter no mínimo 6 caracteres.'); return; }
@@ -67,8 +75,7 @@ export function Login() {
 
         setIsLoading(true);
         try {
-            await register(username.trim(), password);
-            showSuccess('Conta criada com sucesso!');
+            await register(username.trim(), password, email.trim() || undefined);
             navigate('/home');
         } catch (err) {
             showError(err instanceof Error ? err.message : 'Erro ao criar conta.');
@@ -77,25 +84,19 @@ export function Login() {
         }
     }
 
-    function handleSwitchToRegister() {
-        setViewMode('register');
-        setMessage('');
-        setUsername('');
-        setPassword('');
-        setConfirmPassword('');
-    }
+    async function handleRecoverSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (!email.trim()) { showError('Informe o e-mail.'); return; }
 
-    function handleSwitchToRecover() {
-        setViewMode('recover');
-        setMessage('');
-    }
-
-    function handleBackToLogin() {
-        setViewMode('login');
-        setMessage('');
-        setUsername('');
-        setPassword('');
-        setConfirmPassword('');
+        setIsLoading(true);
+        try {
+            await forgotPassword(email.trim());
+            showSuccess('Se esse e-mail estiver cadastrado, você receberá as instruções em breve.');
+        } catch (err) {
+            showError(err instanceof Error ? err.message : 'Erro ao solicitar recuperação.');
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -146,27 +147,20 @@ export function Login() {
                         </div>
 
                         {message && (
-                            <p
-                                className={`${styles.message} ${messageType === 'success' ? styles.messageSuccess : styles.messageError}`}
-                                role="alert"
-                            >
+                            <p className={`${styles.message} ${messageType === 'success' ? styles.messageSuccess : styles.messageError}`} role="alert">
                                 {message}
                             </p>
                         )}
 
-                        <button
-                            className={styles.submitButton}
-                            type="submit"
-                            disabled={isLoading}
-                        >
+                        <button className={styles.submitButton} type="submit" disabled={isLoading}>
                             {isLoading ? 'Entrando...' : 'Entrar'}
                         </button>
 
                         <div className={styles.actions}>
-                            <button type="button" onClick={handleSwitchToRegister} disabled={isLoading}>
+                            <button type="button" onClick={() => switchTo('register')} disabled={isLoading}>
                                 Não tem conta? Cadastre-se
                             </button>
-                            <button type="button" onClick={handleSwitchToRecover} disabled={isLoading}>
+                            <button type="button" onClick={() => switchTo('recover')} disabled={isLoading}>
                                 Esqueci minha senha
                             </button>
                         </div>
@@ -186,6 +180,22 @@ export function Login() {
                                 onChange={e => setUsername(e.target.value)}
                                 placeholder="Escolha um usuário"
                                 autoComplete="username"
+                                disabled={isLoading}
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label htmlFor="reg-email">
+                                E-mail{' '}
+                                <span className={styles.optional}>(opcional, para recuperar senha)</span>
+                            </label>
+                            <input
+                                id="reg-email"
+                                type="email"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                placeholder="seu@email.com"
+                                autoComplete="email"
                                 disabled={isLoading}
                             />
                         </div>
@@ -217,24 +227,17 @@ export function Login() {
                         </div>
 
                         {message && (
-                            <p
-                                className={`${styles.message} ${messageType === 'success' ? styles.messageSuccess : styles.messageError}`}
-                                role="alert"
-                            >
+                            <p className={`${styles.message} ${messageType === 'success' ? styles.messageSuccess : styles.messageError}`} role="alert">
                                 {message}
                             </p>
                         )}
 
-                        <button
-                            className={styles.submitButton}
-                            type="submit"
-                            disabled={isLoading}
-                        >
+                        <button className={styles.submitButton} type="submit" disabled={isLoading}>
                             {isLoading ? 'Criando conta...' : 'Criar conta'}
                         </button>
 
                         <div className={styles.actions}>
-                            <button type="button" onClick={handleBackToLogin} disabled={isLoading}>
+                            <button type="button" onClick={() => switchTo('login')} disabled={isLoading}>
                                 Já tem conta? Faça login
                             </button>
                         </div>
@@ -243,27 +246,37 @@ export function Login() {
 
                 {/* ── RECOVER ── */}
                 {viewMode === 'recover' && (
-                    <div className={styles.fakeFlow}>
-                        <h2>Recuperar senha</h2>
-                        <p>
-                            Tela de recuperação de senha em desenvolvimento.
-                            Por enquanto, este fluxo é apenas uma simulação.
-                        </p>
+                    <form className={styles.form} onSubmit={handleRecoverSubmit}>
+                        <div className={styles.field}>
+                            <label htmlFor="recover-email">E-mail cadastrado</label>
+                            <input
+                                ref={usernameInputRef}
+                                id="recover-email"
+                                type="email"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                placeholder="seu@email.com"
+                                autoComplete="email"
+                                disabled={isLoading}
+                            />
+                        </div>
 
                         {message && (
-                            <p className={styles.message} role="alert">
+                            <p className={`${styles.message} ${messageType === 'success' ? styles.messageSuccess : styles.messageError}`} role="alert">
                                 {message}
                             </p>
                         )}
 
-                        <button
-                            className={styles.submitButton}
-                            type="button"
-                            onClick={handleBackToLogin}
-                        >
-                            Voltar para login
+                        <button className={styles.submitButton} type="submit" disabled={isLoading}>
+                            {isLoading ? 'Enviando...' : 'Enviar link de recuperação'}
                         </button>
-                    </div>
+
+                        <div className={styles.actions}>
+                            <button type="button" onClick={() => switchTo('login')} disabled={isLoading}>
+                                Voltar para login
+                            </button>
+                        </div>
+                    </form>
                 )}
             </section>
         </main>
