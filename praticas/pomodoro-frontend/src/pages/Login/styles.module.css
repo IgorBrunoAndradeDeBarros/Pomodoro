@@ -77,15 +77,36 @@
     outline-color: var(--primary);
 }
 
+.field input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Messages ── */
 .message {
     padding: 1.2rem;
     border-radius: 0.8rem;
-    background: rgba(91, 141, 239, 0.12);
-    color: var(--text-default);
     font-size: 1.4rem;
     text-align: center;
 }
 
+.messageError {
+    background: rgba(239, 91, 91, 0.12);
+    color: #f87171;
+}
+
+.messageSuccess {
+    background: rgba(91, 239, 141, 0.12);
+    color: #4ade80;
+}
+
+/* fallback: if no variant class is applied, keep original style */
+.message:not(.messageError):not(.messageSuccess) {
+    background: rgba(91, 141, 239, 0.12);
+    color: var(--text-default);
+}
+
+/* ── Submit Button ── */
 .submitButton {
     height: 4.8rem;
     border: 0;
@@ -99,11 +120,18 @@
             transform 0.2s ease;
 }
 
-.submitButton:hover {
+.submitButton:hover:not(:disabled) {
     filter: brightness(1.08);
     transform: translateY(-0.1rem);
 }
 
+.submitButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ── Actions ── */
 .actions {
     display: flex;
     flex-direction: column;
@@ -119,10 +147,16 @@
     font-size: 1.4rem;
 }
 
-.actions button:hover {
+.actions button:hover:not(:disabled) {
     text-decoration: underline;
 }
 
+.actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── Fake/Placeholder Flows ── */
 .fakeFlow {
     display: flex;
     flex-direction: column;

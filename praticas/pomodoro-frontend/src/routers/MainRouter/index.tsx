@@ -10,14 +10,13 @@ import { Settings } from '../../pages/Settings';
 
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { PublicOnlyRoute } from '../../components/PublicOnlyRoute';
+import {ResetPassword} from "../../pages/ResetPassword/ResetPassword.tsx";
 
 function ScrollToTop() {
     const { pathname } = useLocation();
-
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [pathname]);
-
     return null;
 }
 
@@ -34,45 +33,15 @@ export function MainRouter() {
                     }
                 />
 
-                <Route
-                    path="/home"
-                    element={
-                        <ProtectedRoute>
-                            <Home />
-                        </ProtectedRoute>
-                    }
-                />
+                {/* Rota pública para redefinição de senha via link do e-mail */}
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-                <Route
-                    path="/history"
-                    element={
-                        <ProtectedRoute>
-                            <History />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/settings"
-                    element={
-                        <ProtectedRoute>
-                            <Settings />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/about-pomodoro"
-                    element={
-                        <ProtectedRoute>
-                            <AboutPomodoro />
-                        </ProtectedRoute>
-                    }
-                />
-
+                <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/about-pomodoro" element={<ProtectedRoute><AboutPomodoro /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
             </Routes>
-
             <ScrollToTop />
         </BrowserRouter>
     );
