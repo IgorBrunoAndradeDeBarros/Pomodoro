@@ -6,8 +6,8 @@ import { TimerWorkerManager } from '../../workers/TimerWorkerManager';
 import { TaskActionTypes } from './taskActions';
 import { loadBeep } from '../../utils/loadBeep';
 import type { TaskStateModel } from '../../models/TaskStateModel';
-import { getSettings } from '../../adapters/settingsAdapter';
-import { getTasks, postTask, patchTaskComplete, patchTaskInterrupt, deleteAllTasks } from '../../adapters/tasksAdapter';
+import { getSettings } from '../../service/settingsAdapter';
+import { getTasks, postTask, patchTaskComplete, patchTaskInterrupt, deleteAllTasks } from '../../service/tasksAdapter';
 
 type TaskContextProviderProps = { children: React.ReactNode };
 
