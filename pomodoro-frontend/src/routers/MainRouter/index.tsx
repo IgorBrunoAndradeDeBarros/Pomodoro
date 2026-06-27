@@ -1,0 +1,48 @@
+import { useEffect } from 'react';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+
+import { AboutPomodoro } from '../../pages/AboutPomodoro';
+import { History } from '../../pages/History';
+import { Home } from '../../pages/home';
+import { Login } from '../../pages/Login';
+import { NotFound } from '../../pages/Notfound';
+import { Settings } from '../../pages/Settings';
+
+import { ProtectedRoute } from '../../components/ProtectedRoute';
+import { PublicOnlyRoute } from '../../components/PublicOnlyRoute';
+import {ResetPassword} from "../../pages/ResetPassword/ResetPassword.tsx";
+
+function ScrollToTop() {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [pathname]);
+    return null;
+}
+
+export function MainRouter() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route
+                    path="/"
+                    element={
+                        <PublicOnlyRoute>
+                            <Login />
+                        </PublicOnlyRoute>
+                    }
+                />
+
+                {/* Rota pública para redefinição de senha via link do e-mail */}
+                <Route path="/reset-password" element={<ResetPassword />} />
+
+                <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/about-pomodoro" element={<ProtectedRoute><AboutPomodoro /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+            </Routes>
+            <ScrollToTop />
+        </BrowserRouter>
+    );
+}
