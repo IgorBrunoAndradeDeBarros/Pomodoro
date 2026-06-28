@@ -8,8 +8,13 @@ import { loadBeep } from '../../utils/loadBeep';
 import type { TaskStateModel } from '../../models/TaskStateModel';
 import { getSettings } from '../../service/settingsAdapter';
 import { getTasks, postTask, patchTaskComplete, patchTaskInterrupt, deleteAllTasks } from '../../service/tasksAdapter';
+import { showMessage } from '../../service/showMessage';
 
 type TaskContextProviderProps = { children: React.ReactNode };
+
+function getErrorMessage(error: unknown, fallback: string) {
+    return error instanceof Error && error.message ? error.message : fallback;
+}
 
 export function TaskContextProvider({ children }: TaskContextProviderProps) {
     const [state, dispatch] = useReducer(taskReducer, initialTaskState, () => {
@@ -38,13 +43,23 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
                     },
                 });
             })
-            .catch(console.error);
+            .catch(error => {
+                console.error(error);
+                showMessage.warn(
+                    getErrorMessage(error, 'Sem conexão com o servidor. Usando configurações salvas localmente.'),
+                );
+            });
 
         getTasks()
             .then(tasks => {
                 dispatch({ type: TaskActionTypes.LOAD_TASKS, payload: tasks });
             })
-            .catch(console.error);
+            .catch(error => {
+                console.error(error);
+                showMessage.warn(
+                    getErrorMessage(error, 'Sem conexão com o servidor. Exibindo histórico salvo localmente.'),
+                );
+            });
     }, []);
 
     useEffect(() => {
@@ -65,7 +80,12 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
             startDate: state.activeTask.startDate,
             completeDate: null,
             interruptDate: null,
-        }).catch(console.error);
+        }).catch(error => {
+            console.error(error);
+            showMessage.error(
+                getErrorMessage(error, 'Não foi possível salvar a tarefa no servidor.'),
+            );
+        });
 
         worker.onmessage(e => {
             const countDownSeconds = e.data;
@@ -76,7 +96,12 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
                     playBeepRef.current = null;
                 }
 
-                patchTaskComplete(state.activeTask!.id, Date.now()).catch(console.error);
+                patchTaskComplete(state.activeTask!.id, Date.now()).catch(error => {
+                    console.error(error);
+                    showMessage.error(
+                        getErrorMessage(error, 'Não foi possível registrar a conclusão da tarefa no servidor.'),
+                    );
+                });
                 dispatch({ type: TaskActionTypes.COMPLETE_TASK });
                 worker.terminate();
                 return;
@@ -102,7 +127,12 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
                 t => t.id === prev.id && t.interruptDate
             );
             if (interrupted) {
-                patchTaskInterrupt(prev.id, interrupted.interruptDate!).catch(console.error);
+                patchTaskInterrupt(prev.id, interrupted.interruptDate!).catch(error => {
+                    console.error(error);
+                    showMessage.error(
+                        getErrorMessage(error, 'Não foi possível registrar a interrupção da tarefa no servidor.'),
+                    );
+                });
             }
         }
     }, [state.activeTask, state.tasks]);
@@ -119,7 +149,12 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
 
     const dispatchWithSideEffects = (action: Parameters<typeof dispatch>[0]) => {
         if (action.type === TaskActionTypes.RESET_STATE) {
-            deleteAllTasks().catch(console.error);
+            deleteAllTasks().catch(error => {
+                console.error(error);
+                showMessage.error(
+                    getErrorMessage(error, 'Não foi possível apagar o histórico no servidor.'),
+                );
+            });
         }
         dispatch(action);
     };
