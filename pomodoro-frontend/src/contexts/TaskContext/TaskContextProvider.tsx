@@ -6,9 +6,10 @@ import { TimerWorkerManager } from '../../workers/TimerWorkerManager';
 import { TaskActionTypes } from './taskActions';
 import { loadBeep } from '../../utils/loadBeep';
 import type { TaskStateModel } from '../../models/TaskStateModel';
-import { getSettings } from '../../service/settingsAdapter';
-import { getTasks, postTask, patchTaskComplete, patchTaskInterrupt, deleteAllTasks } from '../../service/tasksAdapter';
-import { showMessage } from '../../service/showMessage';
+import { getSettings } from '../../services/settingsAdapter';
+import { getTasks, postTask, patchTaskComplete, patchTaskInterrupt, deleteAllTasks } from '../../services/tasksAdapter';
+import { showMessage } from '../../services/showMessage';
+import { useAuthContext } from '../AuthContext';
 
 type TaskContextProviderProps = { children: React.ReactNode };
 
@@ -17,6 +18,8 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export function TaskContextProvider({ children }: TaskContextProviderProps) {
+    const { isAuthenticated } = useAuthContext();
+
     const [state, dispatch] = useReducer(taskReducer, initialTaskState, () => {
         const storageState = localStorage.getItem('state');
         if (storageState === null) return initialTaskState;
@@ -32,6 +35,8 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
     const playBeepRef = useRef<ReturnType<typeof loadBeep> | null>(null);
 
     useEffect(() => {
+        if (!isAuthenticated) return;
+
         getSettings()
             .then(settings => {
                 dispatch({
@@ -60,7 +65,7 @@ export function TaskContextProvider({ children }: TaskContextProviderProps) {
                     getErrorMessage(error, 'Sem conexão com o servidor. Exibindo histórico salvo localmente.'),
                 );
             });
-    }, []);
+    }, [isAuthenticated]);
 
     useEffect(() => {
         localStorage.setItem('state', JSON.stringify(state));
