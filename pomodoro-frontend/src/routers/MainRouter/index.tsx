@@ -33,7 +33,6 @@ export function MainRouter() {
                     }
                 />
 
-                {/* Rota pública para redefinição de senha via link do e-mail */}
                 <Route path="/reset-password" element={<ResetPassword />} />
 
                 <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />

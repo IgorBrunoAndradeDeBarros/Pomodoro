@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { resetPassword } from '../../adapters/authAdapter';
 import styles from '../Login/styles.module.css';

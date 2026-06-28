@@ -116,7 +116,7 @@ export function Login() {
                     </p>
                 </div>
 
-                {/* ── LOGIN ── */}
+                {}
                 {viewMode === 'login' && (
                     <form className={styles.form} onSubmit={handleLoginSubmit}>
                         <div className={styles.field}>
@@ -167,7 +167,7 @@ export function Login() {
                     </form>
                 )}
 
-                {/* ── REGISTER ── */}
+                {}
                 {viewMode === 'register' && (
                     <form className={styles.form} onSubmit={handleRegisterSubmit}>
                         <div className={styles.field}>
@@ -244,7 +244,7 @@ export function Login() {
                     </form>
                 )}
 
-                {/* ── RECOVER ── */}
+                {}
                 {viewMode === 'recover' && (
                     <form className={styles.form} onSubmit={handleRecoverSubmit}>
                         <div className={styles.field}>
