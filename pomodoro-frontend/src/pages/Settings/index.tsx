@@ -5,9 +5,9 @@ import { Heading } from '../../components/heading';
 import { MainTemplate } from '../../tampletes/maintampletes';
 import { useTaskContext } from '../../contexts/TaskContext/useTaskContext';
 import { useEffect, useRef } from 'react';
-import { showMessage } from '../../service/showMessage';
+import { showMessage } from '../../services/showMessage';
 import { TaskActionTypes } from '../../contexts/TaskContext/taskActions';
-import { getSettings, putSettings } from '../../service/settingsAdapter.ts';
+import { getSettings, putSettings } from '../../services/settingsAdapter.ts';
 import {SaveIcon} from "lucide-react";
 
 export function Settings() {

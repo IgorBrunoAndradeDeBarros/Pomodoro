@@ -1,4 +1,4 @@
-import {BASE_URL} from "../service/apiConfig.ts";
+import {BASE_URL} from "../services/apiConfig.ts";
 
 export type AuthPayload = {
     username: string;

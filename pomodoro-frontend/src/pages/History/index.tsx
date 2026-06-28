@@ -10,7 +10,7 @@ import { TaskActionTypes } from '../../contexts/TaskContext/taskActions';
 import { formatDate } from '../../utils/formatDate';
 import { getTaskStatus } from '../../utils/getTaskStatus';
 import { sortTasks, type SortTasksOptions } from '../../utils/sortTasks';
-import { showMessage } from '../../service/showMessage';
+import { showMessage } from '../../services/showMessage';
 
 import styles from './styles.module.css';
 
